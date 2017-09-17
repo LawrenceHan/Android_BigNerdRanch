@@ -1,10 +1,13 @@
 package com.example.hanguang.geoquiz;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Intent;
 import android.os.PersistableBundle;
 import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -13,19 +16,26 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 
 public class QuizActivity extends AppCompatActivity {
 
     private static final String TAG = "QuizActivity";
     private static final String KEY_INDEX = "index";
     private static final String KEY_Questions = "questions";
+    private static final int REQUEST_CODE_CHEAT = 0;
 
     private Button mTrueButton;
     private Button mFalseButton;
     private ImageButton mPrevButton;
     private ImageButton mNextButton;
+    private Button mCheatButton;
     private TextView mQuestionTextView;
 
     private Question[] mQuestionBank = new Question[] {
@@ -99,7 +109,32 @@ public class QuizActivity extends AppCompatActivity {
             }
         });
 
+        mCheatButton = (Button) findViewById(R.id.cheat_button);
+        mCheatButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Start CheatActivity
+                boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
+                Intent intent = CheatActivity.newIntent(QuizActivity.this, answerIsTrue);
+                startActivityForResult(intent, REQUEST_CODE_CHEAT);
+            }
+        });
+
         updateQuestion();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode != Activity.RESULT_OK) {
+            return;
+        }
+
+        if (requestCode == REQUEST_CODE_CHEAT) {
+            if (data == null) {
+                return;
+            }
+            mQuestionBank[mCurrentIndex].setCheated(CheatActivity.wasAnswerShown(data));
+        }
     }
 
     @Override
@@ -147,34 +182,31 @@ public class QuizActivity extends AppCompatActivity {
 
     private void checkAnswer(boolean userPressedTrue) {
         Question question = mQuestionBank[mCurrentIndex];
+        boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
+        int messageResId = 0;
+
         if (!question.isAnswered()) {
             question.setAnswered(true);
 
-            boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
-
-            int messageResId = 0;
-
-            if (userPressedTrue == answerIsTrue) {
-                messageResId = R.string.correct_toast;
+            if (question.isCheated()) {
+                messageResId = R.string.judgment_toast;
             } else {
-                messageResId = R.string.incorrect_toast;
+                if (userPressedTrue == answerIsTrue) {
+                    messageResId = R.string.correct_toast;
+                } else {
+                    messageResId = R.string.incorrect_toast;
+                }
             }
-
-            Toast toast = Toast.makeText(
-                    this,
-                    messageResId,
-                    Toast.LENGTH_SHORT
-            );
-            toast.setGravity(Gravity.TOP, 0, 0);
-            toast.show();
         } else {
-            Toast toast = Toast.makeText(
-                    this,
-                    "You have already answered.",
-                    Toast.LENGTH_SHORT
-            );
-            toast.setGravity(Gravity.TOP, 0, 0);
-            toast.show();
+            messageResId = R.string.already_answered_toast;
         }
+
+        Toast toast = Toast.makeText(
+                this,
+                messageResId,
+                Toast.LENGTH_SHORT
+        );
+        toast.setGravity(Gravity.TOP, 0, 0);
+        toast.show();
     }
 }
