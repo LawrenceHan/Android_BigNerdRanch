@@ -1,10 +1,12 @@
 package com.example.hanguang.geoquiz;
 
+import java.io.Serializable;
+
 /**
  * Created by Hanguang on 10/09/2017.
  */
 
-public class Question {
+public class Question implements Serializable {
     private int mTextResId;
     private boolean mAnswerTrue;
     private boolean mAnswered;

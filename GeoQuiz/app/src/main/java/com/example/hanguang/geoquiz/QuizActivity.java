@@ -28,6 +28,7 @@ public class QuizActivity extends AppCompatActivity {
 
     private static final String TAG = "QuizActivity";
     private static final String KEY_INDEX = "index";
+    private static final String KEY_QUESTIONS = "index";
     private static final String KEY_Questions = "questions";
     private static final int REQUEST_CODE_CHEAT = 0;
 
@@ -38,13 +39,15 @@ public class QuizActivity extends AppCompatActivity {
     private Button mCheatButton;
     private TextView mQuestionTextView;
 
-    private Question[] mQuestionBank = new Question[] {
-            new Question(R.string.question_australia, true),
-            new Question(R.string.question_oceans, true),
-            new Question(R.string.question_mideast, false),
-            new Question(R.string.question_africa, false),
-            new Question(R.string.question_americas, true),
-            new Question(R.string.question_asia, true)
+    private ArrayList<Question> mQuestionBank = new ArrayList<Question>() {
+        {
+            add(new Question(R.string.question_australia, true));
+            add(new Question(R.string.question_oceans, true));
+            add(new Question(R.string.question_mideast, false));
+            add(new Question(R.string.question_africa, false));
+            add(new Question(R.string.question_americas, true));
+            add(new Question(R.string.question_asia, true));
+        }
     };
 
     private int mCurrentIndex = 0;
@@ -58,15 +61,16 @@ public class QuizActivity extends AppCompatActivity {
 
         if (savedInstanceState != null) {
             mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
+            mQuestionBank = (ArrayList<Question>) savedInstanceState.getSerializable(KEY_QUESTIONS);
         }
 
         mQuestionTextView = (TextView) findViewById(R.id.question_text_view);
-        int question = mQuestionBank[mCurrentIndex].getTextResId();
+        int question = mQuestionBank.get(mCurrentIndex).getTextResId();
         mQuestionTextView.setText(question);
         mQuestionTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
+                mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.size();
                 updateQuestion();
             }
         });
@@ -93,7 +97,7 @@ public class QuizActivity extends AppCompatActivity {
             public void onClick(View v) {
                 int index = mCurrentIndex - 1;
                 if (index < 0) {
-                    index = mQuestionBank.length-1;
+                    index = mQuestionBank.size() - 1;
                 }
                 mCurrentIndex = index;
                 updateQuestion();
@@ -104,7 +108,7 @@ public class QuizActivity extends AppCompatActivity {
         mNextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
+                mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.size();
                 updateQuestion();
             }
         });
@@ -114,7 +118,7 @@ public class QuizActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // Start CheatActivity
-                boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
+                boolean answerIsTrue = mQuestionBank.get(mCurrentIndex).isAnswerTrue();
                 Intent intent = CheatActivity.newIntent(QuizActivity.this, answerIsTrue);
                 startActivityForResult(intent, REQUEST_CODE_CHEAT);
             }
@@ -133,7 +137,7 @@ public class QuizActivity extends AppCompatActivity {
             if (data == null) {
                 return;
             }
-            mQuestionBank[mCurrentIndex].setCheated(CheatActivity.wasAnswerShown(data));
+            mQuestionBank.get(mCurrentIndex).setCheated(CheatActivity.wasAnswerShown(data));
         }
     }
 
@@ -160,6 +164,7 @@ public class QuizActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
         Log.i(TAG, "onSaveInstanceState");
         outState.putInt(KEY_INDEX, mCurrentIndex);
+        outState.putSerializable(KEY_QUESTIONS, mQuestionBank);
     }
 
     @Override
@@ -176,13 +181,13 @@ public class QuizActivity extends AppCompatActivity {
 
     private void updateQuestion() {
 //        Log.d(TAG, "Updating question text ", new Exception());
-        int question = mQuestionBank[mCurrentIndex].getTextResId();
+        int question = mQuestionBank.get(mCurrentIndex).getTextResId();
         mQuestionTextView.setText(question);
     }
 
     private void checkAnswer(boolean userPressedTrue) {
-        Question question = mQuestionBank[mCurrentIndex];
-        boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
+        Question question = mQuestionBank.get(mCurrentIndex);
+        boolean answerIsTrue = mQuestionBank.get(mCurrentIndex).isAnswerTrue();
         int messageResId = 0;
 
         if (!question.isAnswered()) {
