@@ -34,9 +34,10 @@ public class Crime {
         mTitle = title;
     }
 
-    public String getDate() {
-        DateFormat formatter = DateFormat.getDateInstance(DateFormat.FULL);
-        return formatter.format(mDate);
+    public Date getDate() {
+        return mDate;
+//        DateFormat formatter = DateFormat.getDateInstance(DateFormat.FULL);
+//        return formatter.format(mDate);
     }
 
     public void setDate(Date date) {

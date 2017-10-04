@@ -1,5 +1,6 @@
 package com.example.hanguang.criminalintent;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -24,6 +25,7 @@ public class CrimeListFragment extends Fragment {
     private RecyclerView mCrimeRecyclerView;
     private CrimeAdapter mAdapter;
     private static final int REQUIRES_POLICE_Type = 1;
+    private int mIndexOfSelectedCrime = 0;
 
     private class CrimeHolder extends RecyclerView.ViewHolder implements ViewGroup.OnClickListener {
         private TextView mTitleTextView;
@@ -55,14 +57,18 @@ public class CrimeListFragment extends Fragment {
         public void bind(Crime crime) {
             mCrime = crime;
             mTitleTextView.setText(mCrime.getTitle());
-            mDateTextView.setText(mCrime.getDate());
+            mDateTextView.setText(mCrime.getDate().toString());
             mSolvedImageView.setVisibility(crime.isSolved() ? View.VISIBLE : View.GONE);
         }
 
         @Override
         public void onClick(View v) {
-            Toast.makeText(getActivity(), mCrime.getTitle() + " clicked!", Toast.LENGTH_SHORT)
-                    .show();
+            Intent intent = CrimePagerActivity.newIntent(getActivity(), mCrime.getId());
+            startActivity(intent);
+
+            CrimeLab crimeLab = CrimeLab.get(getActivity());
+            List<Crime> crimes = crimeLab.getCrimes();
+            mIndexOfSelectedCrime = crimes.indexOf(mCrime);
         }
     }
 
@@ -113,11 +119,21 @@ public class CrimeListFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateUI();
+    }
+
     private void updateUI() {
         CrimeLab crimeLab = CrimeLab.get(getActivity());
         List<Crime> crimes = crimeLab.getCrimes();
 
-        mAdapter = new CrimeAdapter(crimes);
-        mCrimeRecyclerView.setAdapter(mAdapter);
+        if (mAdapter == null) {
+            mAdapter = new CrimeAdapter(crimes);
+            mCrimeRecyclerView.setAdapter(mAdapter);
+        } else {
+            mAdapter.notifyItemChanged(mIndexOfSelectedCrime);
+        }
     }
 }
