@@ -28,7 +28,7 @@ public class CrimeLab {
             Crime crime = new Crime();
             crime.setTitle("Crime #" + i);
             crime.setSolved(i % 2 == 0);
-            crime.setRequiresPolice(!crime.isSolved());
+//            crime.setRequiresPolice(!crime.isSolved());
             mCrimes.add(crime);
         }
     }

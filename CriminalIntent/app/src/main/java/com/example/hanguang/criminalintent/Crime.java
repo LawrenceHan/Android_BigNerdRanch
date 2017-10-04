@@ -1,5 +1,8 @@
 package com.example.hanguang.criminalintent;
 
+import java.text.DateFormat;
+import java.text.FieldPosition;
+import java.text.ParsePosition;
 import java.util.Date;
 import java.util.UUID;
 
@@ -31,8 +34,9 @@ public class Crime {
         mTitle = title;
     }
 
-    public Date getDate() {
-        return mDate;
+    public String getDate() {
+        DateFormat formatter = DateFormat.getDateInstance(DateFormat.FULL);
+        return formatter.format(mDate);
     }
 
     public void setDate(Date date) {
