@@ -19,7 +19,9 @@ import java.util.UUID;
  * Created by Hanguang on 04/10/2017.
  */
 
-public class CrimePagerActivity extends AppCompatActivity {
+public class CrimePagerActivity extends AppCompatActivity
+        implements CrimeFragment.Callbacks {
+
     private static final String EXTRA_CRIME_ID = "com.hanguang.android.criminalintent.crime_id";
 
     private ViewPager mViewPager;
@@ -55,11 +57,14 @@ public class CrimePagerActivity extends AppCompatActivity {
             }
         });
 
-        for (int i = 0; i< mCrimes.size(); i++) {
+        for (int i = 0; i < mCrimes.size(); i++) {
             if (mCrimes.get(i).getId().equals(crimeId)) {
                 mViewPager.setCurrentItem(i);
                 break;
             }
         }
     }
+
+    @Override
+    public void onCrimeUpdated(Crime crime) {}
 }
